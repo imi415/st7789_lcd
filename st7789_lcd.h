@@ -3,10 +3,7 @@
 
 #include <stdint.h>
 
-typedef enum {
-    ST7789_OK,
-    ST7789_ERROR
-} st7789_ret_t;
+typedef enum { ST7789_OK, ST7789_ERROR } st7789_ret_t;
 
 typedef struct {
     st7789_ret_t (*reset_cb)(void *handle);
@@ -24,6 +21,7 @@ typedef struct {
 #endif
 
 st7789_ret_t st7789_lcd_init(st7789_lcd_t *lcd);
-st7789_ret_t st7789_lcd_load(st7789_lcd_t *lcd, uint8_t *data, uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end);
+st7789_ret_t st7789_lcd_load(st7789_lcd_t *lcd, uint8_t *data, uint16_t x_start,
+                             uint16_t x_end, uint16_t y_start, uint16_t y_end);
 
 #endif

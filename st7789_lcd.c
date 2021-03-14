@@ -51,4 +51,3 @@ st7789_ret_t st7789_lcd_load(st7789_lcd_t *lcd, uint8_t *data, uint16_t x_start,
 
     return ST7789_OK;
 }
-
