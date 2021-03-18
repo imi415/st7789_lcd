@@ -112,6 +112,7 @@ st7789_ret_t _st7789_reset(st7789_lcd_t *lcd) {
 
 st7789_ret_t st7789_lcd_init(st7789_lcd_t *lcd) {
     if(_st7789_init_seq(lcd) != ST7789_OK) return ST7789_ERROR;
+    if(st7789_lcd_config(lcd, &lcd->config) != ST7789_OK) return ST7789_ERROR;
     if(st7789_lcd_sleep(lcd, 0) != ST7789_OK) return ST7789_ERROR;
     if(st7789_lcd_display(lcd, 1) != ST7789_OK) return ST7789_ERROR;
 }
@@ -139,10 +140,12 @@ st7789_ret_t st7789_lcd_load(st7789_lcd_t *lcd, uint8_t *data, uint16_t x_start,
         break;
     }
 
+    // Set cursor
     if(_st7789_window(lcd, x_start, x_end, y_start, y_end) != ST7789_OK) {
         return ST7789_ERROR;
     }
 
+    // Write pixel data
     if(lcd->cb.write_data_cb(lcd->user_data, data, data_len) != ST7789_OK) {
         return ST7789_ERROR;
     }
@@ -151,15 +154,43 @@ st7789_ret_t st7789_lcd_load(st7789_lcd_t *lcd, uint8_t *data, uint16_t x_start,
 }
 
 st7789_ret_t st7789_lcd_sleep(st7789_lcd_t *lcd, uint8_t sleep_mode) {
-    uint8_t command = 0x11;
-    if(sleep_mode) command = 0x10;
 
+    // Write SLPIN or SLPOUT command.
+    uint8_t command = sleep_mode ? 0x10 : 0x11;
     return lcd->cb.write_cmd_cb(lcd->user_data, &command, 0x01);
 }
 
 st7789_ret_t st7789_lcd_display(st7789_lcd_t *lcd, uint8_t display_on) {
-    uint8_t command = 0x28;
-    if(display_on) command = 0x29;
 
-    return lcd->cb.write_cmd_cb(lcd->user_data, &command, 0x01);
+    // write display_on command;
+    uint8_t command = display_on ? 0x29 : 0x28;
+    if(lcd->cb.write_cmd_cb(lcd->user_data, &command, 0x01) != ST7789_OK) {
+        return ST7789_ERROR;
+    }
+}
+
+st7789_ret_t st7789_lcd_config(st7789_lcd_t *lcd, st7789_config_t *config) {
+
+    lcd->config.direction = config->direction;
+
+    // Write inversion command.
+    uint8_t command[2] = { config->inversion ? 0x20 : 0x21, 0x00 };
+    if(lcd->cb.write_cmd_cb(lcd->user_data, command, 0x01) != ST7789_OK) {
+        return ST7789_ERROR;
+    }
+    lcd->config.inversion = config->inversion;
+
+    command[0] = 0x3A;
+    command[1] = config->pix_fmt;
+    if(lcd->cb.write_cmd_cb(lcd->user_data, command, 0x02) != ST7789_OK) {
+        return ST7789_ERROR;
+    }
+    lcd->config.pix_fmt = config->pix_fmt;
+
+    command[0] = 0x36;
+    command[1] = config->direction;
+    if(!config->bgr_mode) {
+        command[1] &= ~0x08U;
+    }
+    return lcd->cb.write_cmd_cb(lcd->user_data, command, 0x02);
 }

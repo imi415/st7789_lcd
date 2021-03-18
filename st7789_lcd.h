@@ -9,10 +9,10 @@ typedef enum {
 } st7789_ret_t;
 
 typedef enum {
-    ST7789_DIR_0,
-    ST7789_DIR_90,
-    ST7789_DIR_180,
-    ST7789_DIR_270,
+    ST7789_DIR_0 = 0x08U,
+    ST7789_DIR_90 = 0x68U,
+    ST7789_DIR_180 = 0xC8U,
+    ST7789_DIR_270 = 0xA8U,
 } st7789_direction_t;
 
 typedef enum {
@@ -25,12 +25,14 @@ typedef enum {
 typedef struct {
     st7789_ret_t (*reset_cb)(void *handle);
     st7789_ret_t (*write_cmd_cb)(void *handle, uint8_t *cmd, uint8_t len);
-    st7789_ret_t (*write_data_cb)(void *handle, uint8_t *data, uint8_t len);
+    st7789_ret_t (*write_data_cb)(void *handle, uint8_t *data, uint32_t len);
 } st7789_cb_t;
 
 typedef struct {
     st7789_direction_t direction;
     st7789_pixfmt_t pix_fmt;
+    uint8_t inversion;
+    uint8_t bgr_mode;
 } st7789_config_t;
 
 typedef struct {
@@ -65,5 +67,5 @@ st7789_ret_t st7789_lcd_load(st7789_lcd_t *lcd, uint8_t *data, uint16_t x_start,
                              uint16_t x_end, uint16_t y_start, uint16_t y_end);
 st7789_ret_t st7789_lcd_sleep(st7789_lcd_t *lcd, uint8_t sleep_mode);
 st7789_ret_t st7789_lcd_display(st7789_lcd_t *lcd, uint8_t display_on);
-
+st7789_ret_t st7789_lcd_config(st7789_lcd_t *lcd, st7789_config_t *config);
 #endif
